@@ -7,6 +7,8 @@ export interface SavedStream {
   lastPosition: number;
   duration: number;
   isLive: boolean;
+  isFavorite?: boolean;
+  notes?: string;
 }
 
 export interface PlayerSettings {
