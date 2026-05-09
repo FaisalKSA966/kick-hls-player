@@ -1,0 +1,71 @@
+#root {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  min-height: 100vh;
+}
+
+.kp-root {
+  background:
+    radial-gradient(ellipse at top right, rgba(16, 185, 129, 0.08), transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(139, 92, 246, 0.08), transparent 50%),
+    linear-gradient(180deg, #050607 0%, #0a0c10 50%, #050607 100%);
+  background-attachment: fixed;
+  font-family:
+    "Inter", "Segoe UI", "Tajawal", "Cairo", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for the library list */
+.kp-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.kp-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.kp-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+.kp-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 211, 153, 0.4);
+}
+
+/* Volume slider thumb */
+.kp-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #34d399;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+}
+.kp-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #34d399;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+}
+
+/* Selection */
+::selection {
+  background: rgba(52, 211, 153, 0.35);
+  color: #ffffff;
+}
+
+/* Hide default video controls if any leak through */
+video::-webkit-media-controls {
+  display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
