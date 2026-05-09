@@ -7,65 +7,208 @@
   min-height: 100vh;
 }
 
+/* ============================================
+   macOS Tahoe / Liquid Glass background
+   ============================================ */
 .kp-root {
   background:
-    radial-gradient(ellipse at top right, rgba(16, 185, 129, 0.08), transparent 50%),
-    radial-gradient(ellipse at bottom left, rgba(139, 92, 246, 0.08), transparent 50%),
-    linear-gradient(180deg, #050607 0%, #0a0c10 50%, #050607 100%);
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(16, 185, 129, 0.18), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 90% 10%, rgba(56, 189, 248, 0.14), transparent 65%),
+    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(139, 92, 246, 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 0% 60%, rgba(244, 114, 182, 0.1), transparent 55%),
+    linear-gradient(180deg, #06070a 0%, #0a0d12 35%, #08090d 70%, #050608 100%);
   background-attachment: fixed;
   font-family:
-    "Inter", "Segoe UI", "Tajawal", "Cairo", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    "Cairo", "Tajawal", "Noto Naskh Arabic", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Custom scrollbar for the library list */
+/* Animated mesh blobs for depth */
+.kp-mesh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  pointer-events: none;
+  animation: kpBlobFloat 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes kpBlobFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(40px, -30px, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-30px, 25px, 0) scale(0.95);
+  }
+}
+
+/* ============================================
+   Liquid Glass utility classes
+   ============================================ */
+.kp-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 14px 40px -12px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.kp-glass-strong {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 24px 60px -15px rgba(0, 0, 0, 0.6);
+}
+
+.kp-glass-soft {
+  background: rgba(20, 22, 28, 0.55);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* Glass shine highlight on top edge */
+.kp-glass-shine {
+  position: relative;
+}
+.kp-glass-shine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Frosted button */
+.kp-btn-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 6px 14px -6px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+.kp-btn-glass:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+/* Continuous corner radius hint (Tahoe-style) */
+.kp-rounded-tahoe {
+  border-radius: 24px;
+}
+
+/* ============================================
+   Custom scrollbar
+   ============================================ */
 .kp-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .kp-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .kp-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 .kp-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(52, 211, 153, 0.4);
+  background: rgba(52, 211, 153, 0.45);
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }
 
-/* Volume slider thumb */
+/* ============================================
+   Volume slider thumb
+   ============================================ */
 .kp-volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #34d399;
   cursor: pointer;
   border: 2px solid #ffffff;
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+  transition: transform 0.15s ease;
+}
+.kp-volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
 }
 .kp-volume-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #34d399;
   cursor: pointer;
   border: 2px solid #ffffff;
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
 }
 
-/* Selection */
+/* ============================================
+   Text selection
+   ============================================ */
 ::selection {
   background: rgba(52, 211, 153, 0.35);
   color: #ffffff;
 }
 
-/* Hide default video controls if any leak through */
+/* ============================================
+   Hide default video controls
+   ============================================ */
 video::-webkit-media-controls {
   display: none !important;
 }
 video::-webkit-media-controls-enclosure {
   display: none !important;
+}
+
+/* ============================================
+   Tahoe-style focus ring
+   ============================================ */
+.kp-focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #050607,
+    0 0 0 4px rgba(52, 211, 153, 0.6);
 }

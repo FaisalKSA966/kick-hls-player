@@ -9,6 +9,8 @@ export interface SavedStream {
   isLive: boolean;
   isFavorite?: boolean;
   notes?: string;
+  channel?: string;
+  videoId?: string;
 }
 
 export interface PlayerSettings {
@@ -16,4 +18,7 @@ export interface PlayerSettings {
   muted: boolean;
   speed: number;
   preferredQuality: number;
+  theatre?: boolean;
+  ambient?: boolean;
+  autoResume?: boolean;
 }

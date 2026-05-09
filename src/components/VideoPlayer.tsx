@@ -6,18 +6,18 @@ import {
   Volume2,
   VolumeX,
   Volume1,
-  SkipBack,
-  SkipForward,
   Maximize,
   Minimize,
   Settings,
   PictureInPicture2,
   Loader2,
   AlertTriangle,
-  Radio,
   Gauge,
   Cog,
   Check,
+  Rewind,
+  FastForward,
+  Sparkles,
 } from "lucide-react";
 
 import { formatTime } from "../lib/format";
@@ -38,9 +38,13 @@ interface Props {
   initialMuted?: boolean;
   initialSpeed?: number;
   onSettingsChange?: (vol: number, muted: boolean, speed: number) => void;
+  theatre?: boolean;
+  onToggleTheatre?: () => void;
+  ambient?: boolean;
+  onToggleAmbient?: () => void;
 }
 
-const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 const SEEK_STEP = 10;
 const VOLUME_STEP = 0.05;
 
@@ -54,6 +58,10 @@ export function VideoPlayer({
   initialMuted = false,
   initialSpeed = 1,
   onSettingsChange,
+  theatre = false,
+  onToggleTheatre,
+  ambient = true,
+  onToggleAmbient,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -138,15 +146,15 @@ export function VideoPlayer({
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              setError("خطأ في الشبكة — جاري إعادة المحاولة...");
+              setError("النت عليها شي... بنجرّب مرة ثانية");
               hls.startLoad();
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
-              setError("خطأ في الوسائط — محاولة الاسترداد...");
+              setError("فيه مشكلة بالفيديو... بنحاول نرجعه");
               hls.recoverMediaError();
               break;
             default:
-              setError("تعذّر تشغيل البث. تأكد من صلاحية الرابط.");
+              setError("ما قدرنا نشغّل البث — تأكد إن الرابط لسّه شغّال.");
               hls.destroy();
               break;
           }
@@ -161,7 +169,7 @@ export function VideoPlayer({
       };
       video.addEventListener("loadedmetadata", onLoaded, { once: true });
     } else {
-      setError("متصفحك لا يدعم تشغيل HLS.");
+      setError("متصفحك ما يدعم HLS — جرّب كروم أو إدج.");
       setLoading(false);
     }
 
@@ -376,13 +384,33 @@ export function VideoPlayer({
           break;
         case ".":
           e.preventDefault();
-          setSpeed((s) => Math.min(2, s + 0.25));
+          setSpeed((s) => Math.min(3, s + 0.25));
+          break;
+        case "t":
+          e.preventDefault();
+          onToggleTheatre?.();
+          break;
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          if (isFinite(duration) && duration > 0) {
+            e.preventDefault();
+            const ratio = parseInt(e.key, 10) / 10;
+            seekTo(ratio * duration);
+          }
           break;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [togglePlay, seek, adjustVolume, toggleMute, toggleFullscreen, togglePip]);
+  }, [togglePlay, seek, adjustVolume, toggleMute, toggleFullscreen, togglePip, onToggleTheatre, duration, seekTo]);
 
   const handleSeekBarPointer = useCallback(
     (clientX: number) => {
@@ -445,15 +473,27 @@ export function VideoPlayer({
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
-    <div
-      ref={containerRef}
-      className="group relative w-full overflow-hidden rounded-2xl bg-black shadow-2xl ring-1 ring-white/5"
-      style={{ aspectRatio: "16 / 9" }}
-      onMouseMove={resetHideTimer}
-      onMouseLeave={() => {
-        if (playing) setShowControls(false);
-      }}
-    >
+    <div className="relative w-full">
+      {/* Ambient glow (behind player) */}
+      {ambient && (
+        <div
+          className="pointer-events-none absolute -inset-6 -z-10 opacity-60 blur-3xl"
+          aria-hidden
+          style={{
+            background:
+              "radial-gradient(circle at 30% 30%, rgba(52,211,153,0.25), transparent 60%), radial-gradient(circle at 70% 70%, rgba(56,189,248,0.20), transparent 60%)",
+          }}
+        />
+      )}
+      <div
+        ref={containerRef}
+        className="group relative w-full overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 ring-white/8"
+        style={{ aspectRatio: "16 / 9" }}
+        onMouseMove={resetHideTimer}
+        onMouseLeave={() => {
+          if (playing) setShowControls(false);
+        }}
+      >
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full bg-black"
@@ -464,20 +504,26 @@ export function VideoPlayer({
 
       {/* Loading overlay */}
       {loading && !error && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-12 w-12 animate-spin text-emerald-400" />
-            <p className="text-sm font-medium text-white/80">جاري التحميل...</p>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <Loader2 className="h-16 w-16 animate-spin text-emerald-300" />
+              <span className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="h-6 w-6 text-emerald-200/80" />
+              </span>
+            </div>
+            <p className="text-base font-bold text-white/90">لحظة... جاري تحميل البث</p>
           </div>
         </div>
       )}
 
       {/* Error overlay */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/70 px-6">
-          <div className="max-w-md rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center backdrop-blur-md">
-            <AlertTriangle className="mx-auto mb-3 h-10 w-10 text-red-400" />
-            <p className="text-base font-semibold text-white">{error}</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/75 px-6 backdrop-blur-md">
+          <div className="max-w-md rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-500/15 via-red-500/8 to-transparent p-7 text-center shadow-2xl backdrop-blur-md">
+            <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-300" />
+            <p className="text-lg font-black text-white">{error}</p>
+            <p className="mt-2 text-sm font-medium text-white/65">تأكد من الرابط وعاود حاول.</p>
           </div>
         </div>
       )}
@@ -485,11 +531,11 @@ export function VideoPlayer({
       {/* Center play/pause icon flash */}
       {showCenterIcon && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="rounded-full bg-black/50 p-6 backdrop-blur-md duration-300 animate-in fade-in zoom-in">
+          <div className="rounded-full border border-white/15 bg-black/55 p-7 shadow-2xl backdrop-blur-xl duration-300 animate-in fade-in zoom-in">
             {showCenterIcon === "play" ? (
-              <Play className="h-12 w-12 fill-white text-white" />
+              <Play className="h-14 w-14 fill-white text-white" />
             ) : (
-              <Pause className="h-12 w-12 fill-white text-white" />
+              <Pause className="h-14 w-14 fill-white text-white" />
             )}
           </div>
         </div>
@@ -497,24 +543,27 @@ export function VideoPlayer({
 
       {/* Top gradient + live badge */}
       <div
-        className={`pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 ${
+        className={`pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/75 to-transparent transition-opacity duration-300 ${
           showControls ? "opacity-100" : "opacity-0"
         }`}
       />
       {isLive && (
         <div
-          className={`absolute right-4 top-4 flex items-center gap-2 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition-opacity duration-300 ${
+          className={`absolute right-5 top-5 flex items-center gap-2 rounded-full border border-red-400/30 bg-red-600 px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-red-500/40 transition-opacity duration-300 ${
             showControls ? "opacity-100" : "opacity-0"
           }`}
         >
-          <Radio className="h-3.5 w-3.5 animate-pulse" />
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+          </span>
           LIVE
         </div>
       )}
 
       {/* Bottom controls */}
       <div
-        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-12 transition-opacity duration-300 ${
+        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/65 to-transparent px-5 pb-4 pt-14 transition-opacity duration-300 ${
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -522,7 +571,7 @@ export function VideoPlayer({
         {!isLive && duration > 0 && (
           <div
             ref={seekBarRef}
-            className="group/seek relative mb-2 h-2 cursor-pointer rounded-full bg-white/15 transition-all hover:h-3"
+            className="group/seek relative mb-3 h-2.5 cursor-pointer rounded-full bg-white/15 transition-all hover:h-3.5"
             onClick={onSeekClick}
             onMouseMove={onSeekMove}
             onMouseLeave={() => setSeekHover(null)}
@@ -535,18 +584,18 @@ export function VideoPlayer({
             />
             {/* progress */}
             <div
-              className="absolute inset-y-0 right-auto rounded-full bg-gradient-to-r from-emerald-400 to-green-500 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+              className="absolute inset-y-0 right-auto rounded-full bg-gradient-to-r from-emerald-300 via-emerald-400 to-green-500 shadow-[0_0_12px_rgba(52,211,153,0.65)]"
               style={{ left: 0, width: `${progressPct}%` }}
             />
             {/* thumb */}
             <div
-              className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-emerald-400 opacity-0 shadow-lg ring-2 ring-white/80 transition-opacity group-hover/seek:opacity-100"
-              style={{ left: `calc(${progressPct}% - 8px)` }}
+              className="absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-emerald-300 opacity-0 shadow-lg shadow-emerald-500/50 ring-2 ring-white/90 transition-all group-hover/seek:opacity-100"
+              style={{ left: `calc(${progressPct}% - 10px)` }}
             />
             {/* hover preview */}
             {seekHover && (
               <div
-                className="pointer-events-none absolute -top-9 -translate-x-1/2 rounded-md bg-black/90 px-2 py-1 text-xs font-mono text-white shadow-lg ring-1 ring-white/10"
+                className="pointer-events-none absolute -top-10 -translate-x-1/2 rounded-lg border border-white/15 bg-black/90 px-2.5 py-1.5 text-xs font-bold font-mono text-white shadow-2xl backdrop-blur-md"
                 style={{ left: `${seekHover.x}px` }}
               >
                 {formatTime(seekHover.time)}
@@ -556,32 +605,32 @@ export function VideoPlayer({
         )}
 
         {/* Controls row */}
-        <div className="flex items-center gap-1 text-white" dir="ltr">
+        <div className="flex items-center gap-1.5 text-white" dir="ltr">
           <button
             onClick={togglePlay}
-            className="rounded-full p-2 transition-all hover:bg-white/15 hover:scale-110"
-            aria-label={playing ? "إيقاف" : "تشغيل"}
+            className="rounded-full p-2.5 transition-all hover:bg-white/18 hover:scale-105"
+            aria-label={playing ? "وقّف" : "شغّل"}
           >
-            {playing ? <Pause className="h-6 w-6 fill-white" /> : <Play className="h-6 w-6 fill-white" />}
+            {playing ? <Pause className="h-7 w-7 fill-white" /> : <Play className="h-7 w-7 fill-white" />}
           </button>
 
           {!isLive && (
             <>
               <button
                 onClick={() => seek(-SEEK_STEP)}
-                className="rounded-full p-2 transition-all hover:bg-white/15"
-                aria-label="رجوع 10 ثواني"
-                title="رجوع 10 ثواني (←)"
+                className="rounded-full p-2.5 transition-all hover:bg-white/18"
+                aria-label="رجّع 10 ثواني"
+                title="رجّع 10ث (← أو J)"
               >
-                <SkipBack className="h-5 w-5" />
+                <Rewind className="h-5 w-5" />
               </button>
               <button
                 onClick={() => seek(SEEK_STEP)}
-                className="rounded-full p-2 transition-all hover:bg-white/15"
-                aria-label="تقديم 10 ثواني"
-                title="تقديم 10 ثواني (→)"
+                className="rounded-full p-2.5 transition-all hover:bg-white/18"
+                aria-label="قدّم 10 ثواني"
+                title="قدّم 10ث (→ أو L)"
               >
-                <SkipForward className="h-5 w-5" />
+                <FastForward className="h-5 w-5" />
               </button>
             </>
           )}
@@ -590,12 +639,13 @@ export function VideoPlayer({
           <div className="group/vol flex items-center">
             <button
               onClick={toggleMute}
-              className="rounded-full p-2 transition-all hover:bg-white/15"
-              aria-label={muted ? "إلغاء الكتم" : "كتم"}
+              className="rounded-full p-2.5 transition-all hover:bg-white/18"
+              aria-label={muted ? "فكّ الكتم" : "اكتم"}
+              title={muted ? "فكّ الكتم (M)" : "اكتم (M)"}
             >
               <VolumeIcon className="h-5 w-5" />
             </button>
-            <div className="w-0 overflow-hidden transition-all duration-300 group-hover/vol:w-24">
+            <div className="w-0 overflow-hidden transition-all duration-300 group-hover/vol:w-28">
               <input
                 type="range"
                 min={0}
@@ -606,7 +656,7 @@ export function VideoPlayer({
                   setVolume(Number(e.target.value));
                   if (muted) setMuted(false);
                 }}
-                className="kp-volume-slider mx-2 h-1 w-20 cursor-pointer appearance-none rounded-full bg-white/20"
+                className="kp-volume-slider mx-2 h-1.5 w-24 cursor-pointer appearance-none rounded-full bg-white/20"
                 style={{
                   background: `linear-gradient(to right, rgb(52 211 153) 0%, rgb(52 211 153) ${
                     (muted ? 0 : volume) * 100
@@ -617,17 +667,17 @@ export function VideoPlayer({
           </div>
 
           {/* Time */}
-          <div className="ml-2 select-none font-mono text-sm text-white/90">
+          <div className="ml-2 select-none font-mono text-sm font-semibold text-white/95">
             {isLive ? (
               <span className="flex items-center gap-2">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                LIVE
+                <span className="text-xs font-black tracking-wider">LIVE</span>
               </span>
             ) : (
               <>
                 <span>{formatTime(currentTime)}</span>
                 <span className="mx-1 text-white/40">/</span>
-                <span className="text-white/60">{formatTime(duration)}</span>
+                <span className="text-white/65">{formatTime(duration)}</span>
               </>
             )}
           </div>
@@ -640,8 +690,8 @@ export function VideoPlayer({
               setSettingsTab("speed");
               setShowSettings((s) => !s);
             }}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all hover:bg-white/15 ${
-              speed !== 1 ? "text-emerald-400" : "text-white"
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold transition-all hover:bg-white/18 ${
+              speed !== 1 ? "text-emerald-300" : "text-white"
             }`}
             title="السرعة (، أو .)"
           >
@@ -656,19 +706,20 @@ export function VideoPlayer({
                 setSettingsTab("quality");
                 setShowSettings((s) => !s);
               }}
-              className="rounded-full p-2 transition-all hover:bg-white/15"
+              className="rounded-full p-2.5 transition-all hover:bg-white/18"
               aria-label="الإعدادات"
+              title="إعدادات"
             >
               <Settings className={`h-5 w-5 transition-transform ${showSettings ? "rotate-90" : ""}`} />
             </button>
             {showSettings && (
-              <div className="absolute bottom-12 right-0 w-56 overflow-hidden rounded-xl border border-white/10 bg-black/90 shadow-2xl backdrop-blur-xl">
+              <div className="absolute bottom-14 right-0 w-64 overflow-hidden rounded-2xl border border-white/12 bg-black/85 shadow-2xl backdrop-blur-2xl">
                 <div className="flex border-b border-white/10">
                   <button
                     onClick={() => setSettingsTab("speed")}
-                    className={`flex-1 px-3 py-2 text-xs font-semibold transition-colors ${
+                    className={`flex-1 px-3 py-2.5 text-xs font-bold transition-colors ${
                       settingsTab === "speed"
-                        ? "bg-emerald-500/15 text-emerald-400"
+                        ? "bg-emerald-500/15 text-emerald-300"
                         : "text-white/70 hover:bg-white/5"
                     }`}
                   >
@@ -677,9 +728,9 @@ export function VideoPlayer({
                   </button>
                   <button
                     onClick={() => setSettingsTab("quality")}
-                    className={`flex-1 px-3 py-2 text-xs font-semibold transition-colors ${
+                    className={`flex-1 px-3 py-2.5 text-xs font-bold transition-colors ${
                       settingsTab === "quality"
-                        ? "bg-emerald-500/15 text-emerald-400"
+                        ? "bg-emerald-500/15 text-emerald-300"
                         : "text-white/70 hover:bg-white/5"
                     }`}
                   >
@@ -687,7 +738,7 @@ export function VideoPlayer({
                     الجودة
                   </button>
                 </div>
-                <div className="max-h-64 overflow-y-auto p-1">
+                <div className="max-h-72 overflow-y-auto p-1.5">
                   {settingsTab === "speed" &&
                     SPEED_OPTIONS.map((opt) => (
                       <button
@@ -696,10 +747,10 @@ export function VideoPlayer({
                           setSpeed(opt);
                           setShowSettings(false);
                         }}
-                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-white transition-colors hover:bg-white/10"
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
                       >
-                        <span>{opt === 1 ? "عادي" : `${opt}x`}</span>
-                        {speed === opt && <Check className="h-4 w-4 text-emerald-400" />}
+                        <span>{opt === 1 ? "عادية" : `${opt}x`}</span>
+                        {speed === opt && <Check className="h-4 w-4 text-emerald-300" />}
                       </button>
                     ))}
                   {settingsTab === "quality" && (
@@ -709,13 +760,13 @@ export function VideoPlayer({
                           setQuality(-1);
                           setShowSettings(false);
                         }}
-                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-white transition-colors hover:bg-white/10"
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
                       >
                         <span>تلقائي</span>
-                        {currentLevel === -1 && <Check className="h-4 w-4 text-emerald-400" />}
+                        {currentLevel === -1 && <Check className="h-4 w-4 text-emerald-300" />}
                       </button>
                       {levels.length === 0 && (
-                        <p className="px-3 py-2 text-xs text-white/50">لا توجد جودات إضافية</p>
+                        <p className="px-3 py-2 text-xs text-white/55">ما فيه جودات إضافية</p>
                       )}
                       {levels
                         .slice()
@@ -727,10 +778,10 @@ export function VideoPlayer({
                               setQuality(lvl.index);
                               setShowSettings(false);
                             }}
-                            className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-white transition-colors hover:bg-white/10"
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
                           >
                             <span>{lvl.height ? `${lvl.height}p` : `${Math.round(lvl.bitrate / 1000)}kbps`}</span>
-                            {currentLevel === lvl.index && <Check className="h-4 w-4 text-emerald-400" />}
+                            {currentLevel === lvl.index && <Check className="h-4 w-4 text-emerald-300" />}
                           </button>
                         ))}
                     </>
@@ -740,24 +791,51 @@ export function VideoPlayer({
             )}
           </div>
 
+          {onToggleAmbient && (
+            <button
+              onClick={onToggleAmbient}
+              className={`rounded-full p-2.5 transition-all hover:bg-white/18 ${ambient ? "text-emerald-300" : "text-white/85"}`}
+              aria-label="وضع الهالة الملوّنة"
+              title="وضع الهالة (Ambient)"
+            >
+              <Sparkles className="h-5 w-5" />
+            </button>
+          )}
+
+          {onToggleTheatre && !isLive && (
+            <button
+              onClick={onToggleTheatre}
+              className={`hidden rounded-full p-2.5 transition-all hover:bg-white/18 md:inline-flex ${theatre ? "text-emerald-300" : "text-white/85"}`}
+              aria-label="وضع المسرح"
+              title={theatre ? "إغلاق وضع المسرح (T)" : "وضع المسرح (T)"}
+            >
+              {/* Letterbox icon */}
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                <rect x="3" y="6" width="18" height="12" rx="2" />
+                <path d="M3 9h18M3 15h18" opacity="0.5" />
+              </svg>
+            </button>
+          )}
+
           <button
             onClick={() => void togglePip()}
-            className={`rounded-full p-2 transition-all hover:bg-white/15 ${pip ? "text-emerald-400" : ""}`}
+            className={`rounded-full p-2.5 transition-all hover:bg-white/18 ${pip ? "text-emerald-300" : ""}`}
             aria-label="صورة داخل صورة"
-            title="Picture in Picture (P)"
+            title="صورة داخل صورة (P)"
           >
             <PictureInPicture2 className="h-5 w-5" />
           </button>
 
           <button
             onClick={() => void toggleFullscreen()}
-            className="rounded-full p-2 transition-all hover:bg-white/15"
+            className="rounded-full p-2.5 transition-all hover:bg-white/18"
             aria-label="ملء الشاشة"
             title="ملء الشاشة (F)"
           >
             {fullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

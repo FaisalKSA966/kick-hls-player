@@ -105,7 +105,11 @@ export function StreamLibrary({
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/60 backdrop-blur-xl">
+    <div className="kp-glass kp-glass-shine relative flex h-full flex-col overflow-hidden rounded-3xl">
+      <span
+        className="pointer-events-none absolute -right-24 top-10 h-48 w-48 rounded-full bg-emerald-400/15 blur-3xl"
+        aria-hidden
+      />
       <input
         ref={fileInputRef}
         type="file"
@@ -114,91 +118,91 @@ export function StreamLibrary({
         className="hidden"
       />
 
-      <div className="border-b border-white/5 p-4">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/30">
+      <div className="relative border-b border-white/8 p-5">
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-400 to-green-600 shadow-lg shadow-emerald-500/40 ring-1 ring-white/20">
               <ListVideo className="h-5 w-5 text-black" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">المكتبة</h2>
-              <p className="text-xs text-white/50">
-                {streams.length} بث محفوظ{counts.favorites > 0 && ` • ${counts.favorites} مفضّل`}
+              <h2 className="text-base font-black text-white">مكتبتك</h2>
+              <p className="text-xs font-medium text-white/55">
+                {streams.length} بث{counts.favorites > 0 && ` • ${counts.favorites} مفضلة`}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={onExport}
               disabled={streams.length === 0}
-              title="تصدير المكتبة (JSON)"
-              className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/70 transition-all hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+              title="حمّل المكتبة عندك (JSON)"
+              className="kp-btn-glass kp-focus-ring rounded-xl p-2 text-white/80 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Download className="h-3.5 w-3.5" />
+              <Download className="h-4 w-4" />
             </button>
             <button
               onClick={handleImportClick}
-              title="استيراد مكتبة (JSON)"
-              className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/70 transition-all hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
+              title="ارفع مكتبة من ملف (JSON)"
+              className="kp-btn-glass kp-focus-ring rounded-xl p-2 text-white/80 hover:text-emerald-200"
             >
-              <Upload className="h-3.5 w-3.5" />
+              <Upload className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         <div className="relative">
-          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <Search className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="بحث في المكتبة..."
-            className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pe-9 ps-3 text-sm text-white placeholder-white/40 outline-none transition-all focus:border-emerald-400/50 focus:bg-black/50 focus:ring-2 focus:ring-emerald-400/20"
+            placeholder="دوّر في مكتبتك..."
+            className="w-full rounded-2xl border-2 border-white/10 bg-black/35 py-2.5 pe-10 ps-3.5 text-sm text-white placeholder-white/45 outline-none transition-all focus:border-emerald-400/55 focus:bg-black/55 focus:ring-2 focus:ring-emerald-400/25"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-white/40 hover:bg-white/10 hover:text-white"
-              title="مسح البحث"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-white/45 hover:bg-white/10 hover:text-white"
+              title="مسح"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-1">
+        <div className="mt-4 flex flex-wrap gap-1.5">
           {(
             [
               { k: "all", label: "الكل", count: counts.all },
               { k: "favorites", label: "المفضلة", count: counts.favorites },
               { k: "live", label: "مباشر", count: counts.live },
-              { k: "vod", label: "VOD", count: counts.vod },
+              { k: "vod", label: "مسجّلة", count: counts.vod },
             ] as { k: FilterKey; label: string; count: number }[]
           ).map(({ k, label, count }) => (
             <button
               key={k}
               onClick={() => setFilter(k)}
-              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                 filter === k
-                  ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/40"
-                  : "bg-white/5 text-white/60 ring-1 ring-white/10 hover:bg-white/10 hover:text-white"
+                  ? "bg-emerald-500/25 text-emerald-200 ring-1 ring-emerald-400/50 shadow-sm shadow-emerald-500/20"
+                  : "bg-white/5 text-white/65 ring-1 ring-white/10 hover:bg-white/10 hover:text-white"
               }`}
             >
               {k === "favorites" && <Star className="h-3 w-3" />}
               {label}
-              <span className="rounded-full bg-black/30 px-1 text-[10px] tabular-nums">
+              <span className="rounded-full bg-black/35 px-1.5 text-[10px] tabular-nums">
                 {count}
               </span>
             </button>
           ))}
         </div>
 
-        <div className="mt-2 flex items-center gap-1">
-          <Filter className="h-3 w-3 text-white/30" />
+        <div className="mt-3 flex items-center gap-1">
+          <Filter className="h-3.5 w-3.5 text-white/35" />
           {(
             [
-              { k: "recent", label: "الأحدث مشاهدة", icon: History },
-              { k: "added", label: "الأحدث إضافة", icon: Clock },
+              { k: "recent", label: "آخر مشاهدة", icon: History },
+              { k: "added", label: "آخر إضافة", icon: Clock },
               { k: "name", label: "الاسم", icon: Film },
             ] as { k: SortKey; label: string; icon: typeof History }[]
           ).map(({ k, label, icon: Icon }) => (
@@ -206,34 +210,34 @@ export function StreamLibrary({
               key={k}
               onClick={() => setSort(k)}
               title={label}
-              className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${
                 sort === k
                   ? "bg-white/10 text-white ring-1 ring-white/20"
-                  : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                  : "text-white/55 hover:bg-white/5 hover:text-white/85"
               }`}
             >
-              <Icon className="h-3 w-3" />
+              <Icon className="h-3.5 w-3.5" />
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="kp-scrollbar flex-1 overflow-y-auto p-2">
+      <div className="kp-scrollbar flex-1 overflow-y-auto p-2.5">
         {filtered.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-            <div className="flex h-16 w-16 animate-kp-float items-center justify-center rounded-2xl bg-white/5">
-              <Film className="h-8 w-8 text-white/30" />
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-6 py-14 text-center">
+            <div className="flex h-20 w-20 animate-kp-float items-center justify-center rounded-3xl bg-white/5 ring-1 ring-white/10">
+              <Film className="h-9 w-9 text-white/35" />
             </div>
-            <p className="text-sm font-medium text-white/60">
+            <p className="text-base font-semibold text-white/70">
               {streams.length === 0
-                ? "لا توجد بثوث محفوظة بعد"
+                ? "مكتبتك فاضية لحد الحين"
                 : filter !== "all"
-                  ? "لا توجد نتائج بهذا الفلتر"
-                  : "لا توجد نتائج للبحث"}
+                  ? "ما فيه بث يطابق الفلتر"
+                  : "ما لقينا نتيجة للبحث"}
             </p>
             {streams.length === 0 && (
-              <p className="text-xs text-white/40">أضف رابط M3U8 أعلاه للبدء</p>
+              <p className="text-sm text-white/50">صفّ رابط M3U8 فوق وبنبدأ طوالي</p>
             )}
           </div>
         )}
@@ -245,37 +249,37 @@ export function StreamLibrary({
           return (
             <div
               key={s.id}
-              style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
-              className={`group/item relative mb-2 cursor-pointer overflow-hidden rounded-xl border p-3 transition-all duration-300 animate-kp-fade-up hover:translate-y-[-1px] ${
+              style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}
+              className={`group/item relative mb-2.5 cursor-pointer overflow-hidden rounded-2xl border p-3.5 transition-all duration-300 animate-kp-fade-up hover:translate-y-[-1px] ${
                 isActive
-                  ? "border-emerald-400/50 bg-emerald-400/10 shadow-lg shadow-emerald-500/15"
-                  : "border-white/5 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.05] hover:shadow-md"
+                  ? "border-emerald-400/55 bg-gradient-to-br from-emerald-500/15 via-emerald-400/8 to-transparent shadow-lg shadow-emerald-500/20"
+                  : "border-white/8 bg-white/[0.025] hover:border-white/18 hover:bg-white/[0.06] hover:shadow-md"
               }`}
               onClick={() => editingId !== s.id && onPlay(s)}
             >
               {isActive && (
-                <span className="pointer-events-none absolute inset-y-0 right-0 w-1 animate-pulse bg-gradient-to-b from-emerald-300 via-emerald-400 to-emerald-600" />
+                <span className="pointer-events-none absolute inset-y-0 right-0 w-1.5 animate-pulse bg-gradient-to-b from-emerald-300 via-emerald-400 to-emerald-600" />
               )}
 
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <div className="flex min-w-0 flex-1 items-center gap-2">
+              <div className="mb-2.5 flex items-start justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5">
                   <div
-                    className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-md transition-transform group-hover/item:scale-105 ${
+                    className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-lg ring-1 ring-white/15 transition-transform group-hover/item:scale-105 ${
                       s.isLive
-                        ? "bg-gradient-to-br from-red-500 to-rose-600 shadow-red-500/30"
-                        : "bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-violet-500/30"
+                        ? "bg-gradient-to-br from-red-500 to-rose-600 shadow-red-500/40"
+                        : "bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-violet-500/40"
                     }`}
                   >
                     {s.isLive ? (
                       <>
-                        <Radio className="h-4 w-4 text-white" />
-                        <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
+                        <Radio className="h-5 w-5 text-white" />
+                        <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
                         </span>
                       </>
                     ) : (
-                      <Film className="h-4 w-4 text-white" />
+                      <Film className="h-5 w-5 text-white" />
                     )}
                   </div>
 
@@ -290,7 +294,7 @@ export function StreamLibrary({
                             if (e.key === "Enter") commitEdit();
                             if (e.key === "Escape") setEditingId(null);
                           }}
-                          className="min-w-0 flex-1 rounded-md border border-emerald-400/40 bg-black/40 px-2 py-1 text-sm text-white outline-none"
+                          className="min-w-0 flex-1 rounded-lg border-2 border-emerald-400/45 bg-black/45 px-2.5 py-1.5 text-base text-white outline-none"
                         />
                         <button
                           onClick={commitEdit}
@@ -308,14 +312,14 @@ export function StreamLibrary({
                     ) : (
                       <div className="flex items-center gap-1.5">
                         {s.isFavorite && (
-                          <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />
+                          <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
                         )}
-                        <p className="truncate text-sm font-semibold text-white" title={s.name}>
+                        <p className="truncate text-base font-bold text-white" title={s.name}>
                           {s.name}
                         </p>
                       </div>
                     )}
-                    <p className="truncate font-mono text-[11px] text-white/40" title={s.url}>
+                    <p className="truncate font-mono text-[11.5px] text-white/40" title={s.url}>
                       {truncateUrl(s.url, 50)}
                     </p>
                   </div>
@@ -327,15 +331,15 @@ export function StreamLibrary({
                       e.stopPropagation();
                       onToggleFavorite?.(s.id);
                     }}
-                    title={s.isFavorite ? "إزالة من المفضلة" : "إضافة للمفضلة"}
-                    className={`rounded-md p-1.5 transition-all hover:scale-110 ${
+                    title={s.isFavorite ? "شيله من المفضلة" : "حطّه في المفضلة"}
+                    className={`rounded-lg p-2 transition-all hover:scale-110 ${
                       s.isFavorite
-                        ? "text-amber-400 hover:bg-amber-400/10"
-                        : "text-white/60 hover:bg-white/10 hover:text-amber-300"
+                        ? "text-amber-400 hover:bg-amber-400/15"
+                        : "text-white/65 hover:bg-white/10 hover:text-amber-300"
                     }`}
                   >
                     <Star
-                      className={`h-3.5 w-3.5 ${s.isFavorite ? "fill-amber-400" : "fill-transparent"}`}
+                      className={`h-4 w-4 ${s.isFavorite ? "fill-amber-400" : "fill-transparent"}`}
                     />
                   </button>
                   <button
@@ -343,42 +347,42 @@ export function StreamLibrary({
                       e.stopPropagation();
                       onCopyUrl?.(s.url);
                     }}
-                    title="نسخ الرابط"
-                    className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                    title="انسخ الرابط"
+                    className="rounded-lg p-2 text-white/65 transition-colors hover:bg-white/10 hover:text-white"
                   >
-                    <Copy className="h-3.5 w-3.5" />
+                    <Copy className="h-4 w-4" />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       startEdit(s);
                     }}
-                    title="تعديل الاسم"
-                    className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                    title="غيّر الاسم"
+                    className="rounded-lg p-2 text-white/65 transition-colors hover:bg-white/10 hover:text-white"
                   >
-                    <Pencil className="h-3.5 w-3.5" />
+                    <Pencil className="h-4 w-4" />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemove(s.id);
                     }}
-                    title="حذف"
-                    className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-red-500/20 hover:text-red-400"
+                    title="احذف"
+                    className="rounded-lg p-2 text-white/65 transition-colors hover:bg-red-500/20 hover:text-red-400"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
               {!s.isLive && progress > 0 && (
                 <div className="mb-2">
-                  <div className="h-1 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         isFinished
                           ? "bg-white/30"
-                          : "bg-gradient-to-r from-emerald-400 to-green-500 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+                          : "bg-gradient-to-r from-emerald-400 to-green-500 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
                       }`}
                       style={{ width: `${progress}%` }}
                     />
@@ -386,28 +390,28 @@ export function StreamLibrary({
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-2 text-white/50">
-                  <Clock className="h-3 w-3" />
-                  <span>{formatRelative(s.lastPlayedAt || s.addedAt)}</span>
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-white/55">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span className="font-medium">{formatRelative(s.lastPlayedAt || s.addedAt)}</span>
                   {!s.isLive && s.duration > 0 && (
-                    <span className="font-mono text-white/40">
+                    <span className="font-mono text-white/45">
                       • {formatTime(s.lastPosition)} / {formatTime(s.duration)}
                     </span>
                   )}
                 </div>
                 {isFinished ? (
-                  <span className="flex items-center gap-1 font-semibold text-white/40">
-                    <CheckCircle2 className="h-3 w-3" />
-                    مكتمل
+                  <span className="flex items-center gap-1 font-semibold text-white/45">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    خلص
                   </span>
                 ) : isActive ? (
-                  <span className="flex items-center gap-1 font-semibold text-emerald-400">
-                    <Play className="h-3 w-3 fill-emerald-400" />
-                    قيد التشغيل
+                  <span className="flex items-center gap-1 font-bold text-emerald-300">
+                    <Play className="h-3.5 w-3.5 fill-emerald-400" />
+                    يشتغل الحين
                   </span>
                 ) : s.lastPosition > 5 && !s.isLive ? (
-                  <span className="font-semibold text-emerald-400">استئناف</span>
+                  <span className="font-bold text-emerald-300">كمّل من وين وقفت</span>
                 ) : null}
               </div>
             </div>

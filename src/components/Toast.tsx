@@ -72,7 +72,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       <div
-        className="pointer-events-none fixed left-1/2 top-4 z-[100] flex w-full max-w-sm -translate-x-1/2 flex-col gap-2 px-4"
+        className="pointer-events-none fixed left-1/2 top-5 z-[100] flex w-full max-w-md -translate-x-1/2 flex-col gap-2.5 px-4"
         role="status"
         aria-live="polite"
       >
@@ -81,18 +81,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto flex items-center gap-3 rounded-xl border bg-zinc-900/95 px-4 py-3 shadow-2xl backdrop-blur-xl duration-300 animate-in fade-in slide-in-from-top-4 ${
+              className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-zinc-950/85 px-4 py-3.5 shadow-2xl backdrop-blur-2xl duration-300 animate-in fade-in slide-in-from-top-4 ${
                 COLORS[t.type]
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" />
-              <p className="flex-1 text-sm font-medium text-white">{t.message}</p>
+              <p className="flex-1 text-sm font-bold text-white">{t.message}</p>
               <button
                 onClick={() => dismiss(t.id)}
-                className="rounded-md p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                aria-label="إغلاق"
+                className="rounded-lg p-1.5 text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="سكر"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
           );
