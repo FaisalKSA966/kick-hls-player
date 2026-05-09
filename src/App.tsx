@@ -8,9 +8,9 @@ import {
   Radio,
   Library,
   MessageSquare,
-  Construction,
   Play as PlayIcon,
 } from "lucide-react";
+// Note: ChatPanelPlaceholder removed; replaced by KickChatPanel.
 
 import { VideoPlayer } from "./components/VideoPlayer";
 import { StreamLibrary } from "./components/StreamLibrary";
@@ -20,6 +20,7 @@ import { ShortcutsModal } from "./components/ShortcutsModal";
 import { HelpModal } from "./components/HelpModal";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { ToastProvider, useToast } from "./components/Toast";
+import { KickChatPanel } from "./components/KickChatPanel";
 
 import {
   detectStreamMeta,
@@ -60,6 +61,7 @@ function AppShell() {
   const [theatre, setTheatre] = useState<boolean>(loadSettings().theatre ?? false);
   const [ambient, setAmbient] = useState<boolean>(loadSettings().ambient ?? true);
   const [showChat, setShowChat] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<number>(0);
   const [autoResumePending, setAutoResumePending] = useState<{
     stream: SavedStream;
     position: number;
@@ -257,6 +259,7 @@ function AppShell() {
   const lastSaveRef = useRef<number>(0);
   const onProgress = useCallback(
     (cur: number, dur: number, isLive: boolean) => {
+      setCurrentTime(cur);
       if (!activeId || isLive) return;
       const now = Date.now();
       if (now - lastSaveRef.current < 4000) return;
@@ -334,7 +337,7 @@ function AppShell() {
     setResumePosition(0);
   };
 
-  const showChatToggle = !!active && !active.isLive;
+  const showChatToggle = !!active;
 
   return (
     <div dir="rtl" className="kp-root min-h-screen text-white">
@@ -403,7 +406,7 @@ function AppShell() {
 
                 <div
                   className={`grid gap-4 ${
-                    showChatToggle && showChat ? "lg:grid-cols-[1fr_320px]" : "grid-cols-1"
+                    showChatToggle && showChat ? "lg:grid-cols-[1fr_360px]" : "grid-cols-1"
                   }`}
                 >
                   <VideoPlayer
@@ -423,8 +426,11 @@ function AppShell() {
                   />
 
                   {showChatToggle && showChat && (
-                    <ChatPanelPlaceholder
-                      stream={active}
+                    <KickChatPanel
+                      streamId={active.id}
+                      channel={active.channel}
+                      isLive={active.isLive}
+                      currentTime={currentTime}
                       onClose={() => setShowChat(false)}
                     />
                   )}
@@ -465,7 +471,7 @@ function AppShell() {
                               ? "bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/40"
                               : "kp-btn-glass text-white/80 hover:text-white"
                           }`}
-                          title="شات الـ VOD المتزامن (قريبًا)"
+                          title={active.isLive ? "شات مباشر + سجّله للـ VOD" : "شات الـ VOD المتزامن"}
                         >
                           <MessageSquare className="h-4 w-4" />
                           {showChat ? "اخفي الشات" : "افتح الشات"}
@@ -579,58 +585,6 @@ function AutoResumeBanner({
         </div>
       </div>
     </div>
-  );
-}
-
-function ChatPanelPlaceholder({
-  stream,
-  onClose,
-}: {
-  stream: SavedStream;
-  onClose: () => void;
-}) {
-  return (
-    <aside className="kp-glass kp-glass-shine relative flex h-[480px] flex-col overflow-hidden rounded-3xl lg:h-auto">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/20 ring-1 ring-emerald-400/30">
-            <MessageSquare className="h-4 w-4 text-emerald-300" />
-          </span>
-          <div>
-            <p className="text-sm font-black text-white">شات الـ VOD</p>
-            <p className="text-[11px] font-semibold text-white/55">متزامن مع وقت الفيديو</p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="kp-btn-glass kp-focus-ring rounded-xl p-2 text-white/70 hover:text-white"
-          aria-label="سكر"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-10 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-400/15 ring-1 ring-amber-400/30">
-          <Construction className="h-8 w-8 text-amber-300" />
-        </div>
-        <div>
-          <p className="text-base font-black text-white">قريبًا — قاعد نشتغل عليه</p>
-          <p className="mt-1 text-sm font-medium text-white/60">
-            راح يجيك شات الـ VOD متزامن مع الوقت، نفس تجربة كيك الأصلية.
-          </p>
-        </div>
-        {stream.channel ? (
-          <div className="rounded-xl bg-white/5 px-3 py-2 font-mono text-xs text-white/70 ring-1 ring-white/10" dir="ltr">
-            channel: {stream.channel}
-            {stream.videoId ? ` · vod: ${stream.videoId.slice(0, 8)}...` : ""}
-          </div>
-        ) : (
-          <p className="text-xs text-white/45">
-            ضيف "اسم القناة" و"Video ID" في تفاصيل البث عشان نجهّز لك الشات.
-          </p>
-        )}
-      </div>
-    </aside>
   );
 }
 
