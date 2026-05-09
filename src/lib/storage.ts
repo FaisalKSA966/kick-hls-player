@@ -35,6 +35,54 @@ export function removeStream(id: string): SavedStream[] {
   return streams;
 }
 
+export function toggleFavorite(id: string): SavedStream[] {
+  const streams = loadStreams();
+  const idx = streams.findIndex((s) => s.id === id);
+  if (idx >= 0) {
+    streams[idx] = { ...streams[idx], isFavorite: !streams[idx].isFavorite };
+    saveStreams(streams);
+  }
+  return streams;
+}
+
+export function exportStreamsAsJson(streams: SavedStream[]): string {
+  return JSON.stringify(
+    {
+      app: "kick-hls-player",
+      version: 1,
+      exportedAt: Date.now(),
+      streams,
+    },
+    null,
+    2,
+  );
+}
+
+export function importStreamsFromJson(text: string, existing: SavedStream[]): SavedStream[] {
+  const parsed = JSON.parse(text) as { streams?: SavedStream[] };
+  if (!parsed || !Array.isArray(parsed.streams)) throw new Error("Invalid file format");
+  const map = new Map<string, SavedStream>();
+  for (const s of existing) map.set(s.url, s);
+  for (const s of parsed.streams) {
+    if (!s || typeof s.url !== "string" || typeof s.id !== "string") continue;
+    const prev = map.get(s.url);
+    if (prev) {
+      map.set(s.url, {
+        ...prev,
+        ...s,
+        id: prev.id,
+        lastPosition: Math.max(prev.lastPosition || 0, s.lastPosition || 0),
+        lastPlayedAt: Math.max(prev.lastPlayedAt || 0, s.lastPlayedAt || 0),
+      });
+    } else {
+      map.set(s.url, s);
+    }
+  }
+  const merged = Array.from(map.values()).sort((a, b) => b.lastPlayedAt - a.lastPlayedAt);
+  saveStreams(merged);
+  return merged;
+}
+
 export function updateStreamProgress(
   id: string,
   lastPosition: number,
